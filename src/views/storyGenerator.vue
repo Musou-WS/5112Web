@@ -40,10 +40,39 @@
             </div>
             <!-- build evidence chain -->
             <div class="title">Step 5:</div>
+            <el-form-item>
+                <el-button v-if="isBuildingEvidenceChain" disabled>Building<el-icon><Loading /></el-icon></el-button>
+                <el-button type="primary" @click="buildEvidenceChain" v-else>Build Evidence Chain</el-button>
+            </el-form-item>
+            <el-form-item>
+                <el-button v-if="isUpdatingEvidenceChain" disabled>Updating<el-icon><Loading /></el-icon></el-button>
+                <el-button type="primary" @click="updateEvidenceChain" v-else>Update Evidence Chain</el-button>
+            </el-form-item>
+            <div class="answer" v-for="(item, index) in evidenceChain">
+                {{ item }}
+            </div>
             <!-- build unclear parts chain -->
             <div class="title">Step 6:</div>
+            <el-form-item>
+                <el-button v-if="isBuildingUnclearParts" disabled>Building<el-icon><Loading /></el-icon></el-button>
+                <el-button type="primary" @click="buildUnclearParts" v-else>Build Unclear Parts</el-button>
+            </el-form-item>
+            <el-form-item>
+                <el-button v-if="isUpdatingUnclearParts" disabled>Updating<el-icon><Loading /></el-icon></el-button>
+                <el-button type="primary" @click="updateUnclearParts" v-else>Update Unclear Parts</el-button>
+            </el-form-item>
+            <div class="answer" v-for="(item, index) in unclearParts">
+                {{ item }}
+            </div>
             <!-- rebuild story -->
-            <div class="title">Step 6:</div>
+            <div class="title">Step 7:</div>
+            <el-form-item>
+                <el-button v-if="isRebuilding" disabled>Rebuilding<el-icon><Loading /></el-icon></el-button>
+                <el-button type="primary" @click="rebuildStory" v-else>Rebuild Story</el-button>
+            </el-form-item>
+            <div class="answer">
+                {{ storyRebuilt }}
+            </div>
         </el-form>
     </div>
 </template>
@@ -59,8 +88,16 @@ const form = reactive({
 const isGenerating = ref(false)
 const isGeneratingRelationshipTree = ref(false)
 const isInitializing = ref(false)
+const isBuildingEvidenceChain = ref(false)
+const isUpdatingEvidenceChain = ref(false)
+const isBuildingUnclearParts = ref(false)
+const isUpdatingUnclearParts = ref(false)
+const isRebuilding = ref(false)
 const relationshipTree = ref('')
 const storyInitialized = ref('')
+const evidenceChain = ref([])
+const unclearParts = ref([])
+const storyRebuilt = ref('')
 
 const addRelationships = () => {
     form.plots.push('')
@@ -123,6 +160,90 @@ const initializeStory = () => {
         },
         error=>{
             isInitializing.value = false
+        }
+    )
+}
+const buildEvidenceChain = () => {
+    isBuildingEvidenceChain.value = true
+    axios.get('/api/buildEvidenceChain', {
+        params: {
+            content: storyInitialized.value
+        }
+    }).then(
+        success=>{
+            evidenceChain.value.push(success.data)
+            isBuildingEvidenceChain.value = false
+        },
+        error=>{
+            isBuildingEvidenceChain.value = false
+        }
+    )
+}
+const updateEvidenceChain = () => {
+    isUpdatingEvidenceChain.value = true
+    axios.get('/api/updateEvidenceChain', {
+        params: {
+            content: storyInitialized.value,
+            evidenceChain: evidenceChain.value.toString(),
+        }
+    }).then(
+        success=>{
+            evidenceChain.value.push(success.data)
+            isUpdatingEvidenceChain.value = false
+        },
+        error=>{
+            isUpdatingEvidenceChain.value = false
+        }
+    )
+}
+const buildUnclearParts = () => {
+    isBuildingUnclearParts.value = true
+    axios.get('/api/buildUnclearParts', {
+        params: {
+            content: storyInitialized.value,
+        }
+    }).then(
+        success=>{
+            unclearParts.value.push(success.data)
+            isBuildingUnclearParts.value = false
+        },
+        error=>{
+            isBuildingUnclearParts.value = false
+        }
+    )
+}
+const updateUnclearParts = () => {
+    isUpdatingUnclearParts.value = true
+    axios.get('/api/updateUnclearParts', {
+        params: {
+            content: storyInitialized.value,
+            unclearParts: unclearParts.value.toString(),
+        }
+    }).then(
+        success=>{
+            unclearParts.value.push(success.data)
+            isUpdatingUnclearParts.value = false
+        },
+        error=>{
+            isUpdatingEvidenceChain.value = false
+        }
+    )
+}
+const rebuildStory = () => {
+    isRebuilding.value = true
+    axios.get('/api/rebuildStory', {
+        params: {
+            content: storyInitialized.value,
+            evidenceChain: evidenceChain.value.toString(),
+            unclearParts: unclearParts.value.toString(),
+        }
+    }).then(
+        success=>{
+            storyRebuilt.value = success.data
+            isRebuilding.value = false
+        },
+        error=>{
+            isRebuilding.value = false
         }
     )
 }
