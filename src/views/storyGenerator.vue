@@ -27,16 +27,14 @@
                 <el-button v-if="isGeneratingRelationshipTree" disabled>Generating<el-icon><Loading /></el-icon></el-button>
                 <el-button type="primary" @click="generateRelationshipTree" v-else>Generate Relationships Tree</el-button>
             </el-form-item>
-            <div class="answer">
-                {{ relationshipTree }}
+            <div class="answer" v-html="relationshipTree">
             </div>
             <div class="title">Step 4:</div>
             <el-form-item>
                 <el-button v-if="isInitializing" disabled>Initializing<el-icon><Loading /></el-icon></el-button>
                 <el-button type="primary" @click="initializeStory" v-else>Initialize Story</el-button>
             </el-form-item>
-            <div class="answer">
-                {{ storyInitialized }}
+            <div class="answer" v-html="storyInitialized">
             </div>
             <!-- build evidence chain -->
             <div class="title">Step 5:</div>
@@ -70,8 +68,7 @@
                 <el-button v-if="isRebuilding" disabled>Rebuilding<el-icon><Loading /></el-icon></el-button>
                 <el-button type="primary" @click="rebuildStory" v-else>Rebuild Story</el-button>
             </el-form-item>
-            <div class="answer">
-                {{ storyRebuilt }}
+            <div class="answer" v-html="storyRebuilt">
             </div>
         </el-form>
     </div>
@@ -102,6 +99,12 @@ const storyRebuilt = ref('')
 const addRelationships = () => {
     form.plots.push('')
     form.relationships.push('')
+}
+
+const modifyContent = (content) => {
+    content = content.replaceAll('```html', '')
+    content = content.replaceAll('```', '')
+    return content
 }
 
 const deleteRelationships = (index) => {
@@ -139,7 +142,7 @@ const generateRelationshipTree = () => {
         }
     }).then(
         success=>{
-            relationshipTree.value = success.data
+            relationshipTree.value = modifyContent(success.data)
             isGeneratingRelationshipTree.value = false
         },
         error=>{
@@ -155,7 +158,7 @@ const initializeStory = () => {
         }
     }).then(
         success=>{
-            storyInitialized.value = success.data
+            storyInitialized.value = modifyContent(success.data)
             isInitializing.value = false
         },
         error=>{
@@ -165,10 +168,8 @@ const initializeStory = () => {
 }
 const buildEvidenceChain = () => {
     isBuildingEvidenceChain.value = true
-    axios.get('/api/buildEvidenceChain', {
-        params: {
-            content: storyInitialized.value
-        }
+    axios.post('/api/buildEvidenceChain', {
+        content: storyInitialized.value
     }).then(
         success=>{
             evidenceChain.value.push(success.data)
@@ -181,11 +182,9 @@ const buildEvidenceChain = () => {
 }
 const updateEvidenceChain = () => {
     isUpdatingEvidenceChain.value = true
-    axios.get('/api/updateEvidenceChain', {
-        params: {
-            content: storyInitialized.value,
-            evidenceChain: evidenceChain.value.toString(),
-        }
+    axios.post('/api/updateEvidenceChain', {
+        content: storyInitialized.value,
+        evidenceChain: evidenceChain.value.toString(),
     }).then(
         success=>{
             evidenceChain.value.push(success.data)
@@ -198,10 +197,8 @@ const updateEvidenceChain = () => {
 }
 const buildUnclearParts = () => {
     isBuildingUnclearParts.value = true
-    axios.get('/api/buildUnclearParts', {
-        params: {
-            content: storyInitialized.value,
-        }
+    axios.post('/api/buildUnclearParts', {
+        content: storyInitialized.value,
     }).then(
         success=>{
             unclearParts.value.push(success.data)
@@ -214,11 +211,9 @@ const buildUnclearParts = () => {
 }
 const updateUnclearParts = () => {
     isUpdatingUnclearParts.value = true
-    axios.get('/api/updateUnclearParts', {
-        params: {
-            content: storyInitialized.value,
-            unclearParts: unclearParts.value.toString(),
-        }
+    axios.post('/api/updateUnclearParts', {
+        content: storyInitialized.value,
+        unclearParts: unclearParts.value.toString(),
     }).then(
         success=>{
             unclearParts.value.push(success.data)
@@ -231,15 +226,13 @@ const updateUnclearParts = () => {
 }
 const rebuildStory = () => {
     isRebuilding.value = true
-    axios.get('/api/rebuildStory', {
-        params: {
-            content: storyInitialized.value,
-            evidenceChain: evidenceChain.value.toString(),
-            unclearParts: unclearParts.value.toString(),
-        }
+    axios.post('/api/rebuildStory', {
+        content: storyInitialized.value,
+        evidenceChain: evidenceChain.value.toString(),
+        unclearParts: unclearParts.value.toString(),
     }).then(
         success=>{
-            storyRebuilt.value = success.data
+            storyRebuilt.value = modifyContent(success.data)
             isRebuilding.value = false
         },
         error=>{
@@ -258,6 +251,10 @@ const rebuildStory = () => {
         top: 0;
         padding: 100px 100px 100px 100px;
         overflow-y: auto;
+        th {
+            background: #FFFFFFDE;
+            color: #000000;
+        }
         .title {
             text-align: start;
             margin-bottom: 20px;
