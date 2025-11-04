@@ -9,7 +9,7 @@
                 <el-icon v-if="form.plots.length>1" @click="deleteRelationships(index)" class="delete"><Close /></el-icon>
             </div>
             <el-form-item>
-                <el-button type="primary" @click="addRelationships">Add Relationships</el-button>
+                <el-button type="primary" @click="addRelationships">Add Plots</el-button>
             </el-form-item>
             <div class="title">Step 2:</div>
             <el-form-item>
@@ -79,8 +79,8 @@ import { reactive, ref } from 'vue';
 import axios from 'axios'
 
 const form = reactive({
-    plots: ['Alpha murdered Beta', 'Detective Charlie'],
-    relationships: ['', ''],
+    plots: [''],
+    relationships: [''],
 })
 const isGenerating = ref(false)
 const isGeneratingRelationshipTree = ref(false)

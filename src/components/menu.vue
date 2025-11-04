@@ -3,9 +3,10 @@
         <el-menu
             background-color="#000000"
             text-color="#cccccc"
-            default-active="1"
             :collapse="isCollapse"
             class="menu_list"
+            :router="true"
+            :default-active="activeLink"
         >
             <el-menu-item @click="handleCollapse" class="btn">
                 <el-icon>
@@ -13,20 +14,31 @@
                     <Fold v-else />
                 </el-icon>
             </el-menu-item>
-            <el-menu-item index="1">
+            <el-menu-item index="/">
                 <el-icon><House /></el-icon>
-                <span>Generate Story</span>
+                <span>Story Generator</span>
             </el-menu-item>
-            <el-menu-item index="2">
-                <el-icon><House /></el-icon>
-                <span>Basic AI Agent</span>
+            <el-menu-item index="/auto">
+                <el-icon><HomeFilled /></el-icon>
+                <span>Auto Story Generator</span>
             </el-menu-item>
         </el-menu>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const activeLink = ref(route.path);
+
+watch(
+    () => route.path,
+    (newPath) => {
+    activeLink.value = newPath;
+    }
+);
 
 const isCollapse = ref(true)
 
